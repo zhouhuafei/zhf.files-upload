@@ -52,6 +52,10 @@ ImgUpload.prototype.eventsInputChange = function () {
         for (var i = 0; i < len; i++) {
             var f = files[i];
             var isImages = /image/ig.test(f.type);
+            // 类型判断保留吧
+            // 大小判断
+            // 个数判断
+            // 错误回调待续...
             // 是图片
             if (isImages) {
                 if (imagesNum < limitNum) {
