@@ -5,7 +5,7 @@ function FilesUpload(opts) {
     this.opts = extend({
         input: null,
         limitNum: 5, // 一次性上传的数量
-        maxSize: 2 * 1024 * 1024, // 单个文件最大2M
+        limitSize: 2 * 1024 * 1024, // 单个文件最大2M
         // 超出限制的回调
         overLimitCallback: function () {
             console.log('no find overLimitCallback');
@@ -52,7 +52,7 @@ FilesUpload.prototype.eventsInputChange = function () {
     const self = this;
     const opts = this.opts;
     const limitNum = opts.limitNum;
-    const maxSize = opts.maxSize;
+    const limitSize = opts.limitSize;
     const input = getDomArray(opts.input)[0];
     input.addEventListener('change', function () {
         let filesNum = 0;
@@ -65,8 +65,19 @@ FilesUpload.prototype.eventsInputChange = function () {
             filesNum++;
             const currentFile = files[i];
             const size = currentFile.size;
-            if (filesNum > limitNum || size > maxSize) { // 大于限制几张图片的数量 大于最大限制的数量
-                overLimitData.push({limitNum, filesNum, size, maxSize, file: currentFile, index: i});
+            const isOverLimitNum = filesNum > limitNum;
+            const isOverLimitSize = size > limitSize;
+            if (isOverLimitNum || isOverLimitSize) { // 大于限制几张图片的数量 大于最大限制的数量
+                overLimitData.push({
+                    isOverLimitNum,
+                    isOverLimitSize,
+                    limitNum,
+                    filesNum,
+                    size,
+                    limitSize,
+                    file: currentFile,
+                    index: i,
+                });
             } else {
                 imgData.push(currentFile);
             }
@@ -89,6 +100,9 @@ FilesUpload.prototype.fileReadAsDataURL = function (imgData) {
             opts.base64CallbackItem({base64: this.result, index: i});
             base64Result.push({base64: this.result, index: i});
             if (num === imgData.length) {
+                base64Result.sort(function (prev, next) {
+                    return prev.index - next.index;
+                });
                 opts.base64CallbackAll(base64Result);
             }
         });

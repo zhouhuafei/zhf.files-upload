@@ -7,7 +7,7 @@ function FilesUpload(opts) {
     this.opts = extend({
         input: null,
         limitNum: 5, // 一次性上传的数量
-        maxSize: 2 * 1024 * 1024, // 单个文件最大2M
+        limitSize: 2 * 1024 * 1024, // 单个文件最大2M
         // 超出限制的回调
         overLimitCallback: function overLimitCallback() {
             console.log('no find overLimitCallback');
@@ -52,7 +52,7 @@ FilesUpload.prototype.eventsInputChange = function () {
     var self = this;
     var opts = this.opts;
     var limitNum = opts.limitNum;
-    var maxSize = opts.maxSize;
+    var limitSize = opts.limitSize;
     var input = getDomArray(opts.input)[0];
     input.addEventListener('change', function () {
         var filesNum = 0;
@@ -65,9 +65,20 @@ FilesUpload.prototype.eventsInputChange = function () {
             filesNum++;
             var currentFile = files[i];
             var size = currentFile.size;
-            if (filesNum > limitNum || size > maxSize) {
+            var isOverLimitNum = filesNum > limitNum;
+            var isOverLimitSize = size > limitSize;
+            if (isOverLimitNum || isOverLimitSize) {
                 // 大于限制几张图片的数量 大于最大限制的数量
-                overLimitData.push({ limitNum: limitNum, filesNum: filesNum, size: size, maxSize: maxSize, file: currentFile, index: i });
+                overLimitData.push({
+                    isOverLimitNum: isOverLimitNum,
+                    isOverLimitSize: isOverLimitSize,
+                    limitNum: limitNum,
+                    filesNum: filesNum,
+                    size: size,
+                    limitSize: limitSize,
+                    file: currentFile,
+                    index: i
+                });
             } else {
                 imgData.push(currentFile);
             }
@@ -90,6 +101,9 @@ FilesUpload.prototype.fileReadAsDataURL = function (imgData) {
             opts.base64CallbackItem({ base64: this.result, index: i });
             base64Result.push({ base64: this.result, index: i });
             if (num === imgData.length) {
+                base64Result.sort(function (prev, next) {
+                    return prev.index - next.index;
+                });
                 opts.base64CallbackAll(base64Result);
             }
         });
