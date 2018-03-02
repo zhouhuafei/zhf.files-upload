@@ -3,17 +3,26 @@
 var extend = require('zhf.extend');
 var getDomArray = require('zhf.get-dom-array');
 
-function ImgUpload(opts) {
+function FilesUpload(opts) {
     this.opts = extend({
         input: null,
-        limitNum: 5, // 一次上传限制几张图片
+        limitNum: 5, // 一次性上传的数量
+        maxSize: 2 * 1024 * 1024, // 单个文件最大2M
+        // 超出限制的回调
+        overLimitCallback: function overLimitCallback() {
+            console.log('no find overLimitCallback');
+        },
         // 选择图片的回调
         changeCallback: function changeCallback() {
             console.log('no find changeCallback');
         },
-        // 把图片读取成base64编码的回调
-        base64Callback: function base64Callback() {
-            console.log('no find base64Callback');
+        // 每次把图片读取成base64的编码时都会调用这个
+        base64CallbackItem: function base64CallbackItem() {
+            console.log('no find base64CallbackItem');
+        },
+        // 所有图片都读取成base64的编码时会调用这个
+        base64CallbackAll: function base64CallbackAll() {
+            console.log('no find base64CallbackAll');
         }
     }, opts);
     // 如果没有选择文件的input,则不继续往下执行
@@ -25,61 +34,65 @@ function ImgUpload(opts) {
     this.init();
 }
 
-ImgUpload.prototype.init = function () {
+FilesUpload.prototype.init = function () {
     // 渲染结构
     this.render();
     // 渲染功能
     this.power();
 };
-ImgUpload.prototype.render = function () {};
-ImgUpload.prototype.power = function () {
+FilesUpload.prototype.render = function () {};
+FilesUpload.prototype.power = function () {
     // 事件相关
     this.events();
 };
-ImgUpload.prototype.events = function () {
+FilesUpload.prototype.events = function () {
     this.eventsInputChange();
 };
-ImgUpload.prototype.eventsInputChange = function () {
+FilesUpload.prototype.eventsInputChange = function () {
     var self = this;
-    var limitNum = this.opts.limitNum;
-    var input = getDomArray(this.opts.input)[0];
+    var opts = this.opts;
+    var limitNum = opts.limitNum;
+    var maxSize = opts.maxSize;
+    var input = getDomArray(opts.input)[0];
     input.addEventListener('change', function () {
-        var imagesNum = 0;
+        var filesNum = 0;
         // 图片的相关信息
-        self.imgData = [];
+        var imgData = [];
         var files = this.files;
         var len = files.length;
+        var overLimitData = [];
         for (var i = 0; i < len; i++) {
-            var f = files[i];
-            var isImages = /image/ig.test(f.type);
-            // 类型判断保留吧
-            // 大小判断
-            // 个数判断
-            // 错误回调待续...
-            // 是图片
-            if (isImages) {
-                if (imagesNum < limitNum) {
-                    // 小于限制几张图片的数量
-                    self.imgData.push(f);
-                    imagesNum++;
-                } else {// 大于限制几张图片的数量
-
-                }
+            filesNum++;
+            var currentFile = files[i];
+            var size = currentFile.size;
+            if (filesNum > limitNum || size > maxSize) {
+                // 大于限制几张图片的数量 大于最大限制的数量
+                overLimitData.push({ limitNum: limitNum, filesNum: filesNum, size: size, maxSize: maxSize, file: currentFile, index: i });
+            } else {
+                imgData.push(currentFile);
             }
         }
-        self.opts.changeCallback({ imgData: self.imgData });
-        // 把图片读成base64编码
-        self.fileReadAsDataURL(self.imgData);
+        opts.changeCallback(imgData);
+        opts.overLimitCallback(overLimitData);
+        self.fileReadAsDataURL(imgData); // 把图片读成base64编码
     });
 };
-ImgUpload.prototype.fileReadAsDataURL = function (imgData) {
+FilesUpload.prototype.fileReadAsDataURL = function (imgData) {
     var self = this;
+    var opts = self.opts;
+    var num = 0;
+    var base64Result = [];
     imgData.forEach(function (v, i) {
         var fileRender = new FileReader();
         fileRender.readAsDataURL(v);
         fileRender.addEventListener('load', function () {
-            self.opts.base64Callback({ base64: this.result, index: i });
+            num++;
+            opts.base64CallbackItem({ base64: this.result, index: i });
+            base64Result.push({ base64: this.result, index: i });
+            if (num === imgData.length) {
+                opts.base64CallbackAll(base64Result);
+            }
         });
     });
 };
-module.exports = ImgUpload;
+module.exports = FilesUpload;

@@ -1,5 +1,5 @@
 {
-    "name": "zhf.img-upload",
+    "name": "zhf.files-upload",
     "version": "1.0.0",
     "description": "no description",
     "main": "dist/index.min.js",
@@ -11,14 +11,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/zhouhuafei/zhf.img-upload.git"
+        "url": "git+https://github.com/zhouhuafei/zhf.files-upload.git"
     },
     "author": "",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/zhouhuafei/zhf.img-upload/issues"
+        "url": "https://github.com/zhouhuafei/zhf.files-upload/issues"
     },
-    "homepage": "https://github.com/zhouhuafei/zhf.img-upload#readme",
+    "homepage": "https://github.com/zhouhuafei/zhf.files-upload#readme",
     "devDependencies": {
         "babel-eslint": "^8.0.2",
         "babel-preset-env": "^1.6.0",
@@ -31,6 +31,7 @@
         "eslint-plugin-standard": "^3.0.1",
         "gulp": "^3.9.1",
         "gulp-babel": "^7.0.0",
+        "gulp-browserify": "^0.5.1",
         "gulp-rename": "^1.2.2",
         "gulp-uglify": "^3.0.0",
         "jest": "^22.1.1"

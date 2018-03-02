@@ -1,6 +1,4 @@
-# 图片上传
-```
-const FilesUpload = require('zhf.files-upload');
+const FilesUpload = require('../dist/index.min');
 new FilesUpload({
     input: '.input',
     limitNum: 5, // 一次性上传的数量
@@ -21,4 +19,3 @@ new FilesUpload({
         console.log('base64CallbackAll', data);
     },
 });
-```
